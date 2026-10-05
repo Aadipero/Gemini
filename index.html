@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Automation Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-base: #0b0f19;
+      --panel-bg: #111827;
+      --card-bg: #141d2e;
+      --card-border: #1e293b;
+      --accent-blue: #38bdf8;
+      --accent-green: #22c55e;
+      --accent-amber: #f59e0b;
+      --accent-red: #ef4444;
+      --accent-purple: #a855f7;
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      user-select: none;
+    }
+
+    body {
+      background-color: var(--bg-base);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    .dashboard-container {
+      display: grid;
+      grid-template-columns: 260px 1fr 300px;
+      gap: 16px;
+      padding: 16px;
+      flex: 1;
+    }
+
+    /* Left Sidebar */
+    .sidebar-left {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .config-card {
+      background: var(--panel-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .config-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .toggle-switch {
+      width: 40px;
+      height: 22px;
+      background: #3b82f6;
+      border-radius: 20px;
+      position: relative;
+      cursor: pointer;
+    }
+
+    .toggle-switch::after {
+      content: '';
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      background: #fff;
+      border-radius: 50%;
+      top: 3px;
+      right: 3px;
+    }
+
+    .stepper {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #0f172a;
+      border: 1px solid var(--card-border);
+      border-radius: 6px;
+      padding: 2px 8px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+    }
+
+    .action-btn {
+      width: 100%;
+      padding: 11px 14px;
+      border-radius: 10px;
+      border: none;
+      font-size: 13px;
+      font-weight: 600;
+      color: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+    .action-btn:active { transform: scale(0.98); }
+    .btn-pause { background: #f59e0b; color: #000; }
+    .btn-stop { background: #d97706; color: #000; font-size: 12px; }
+    .btn-kill { background: #ef4444; }
+    .btn-convert { background: #3b82f6; }
+    .btn-check { background: #10b981; }
+    .btn-apk { background: #8b5cf6; }
+    .btn-retry { background: #f97316; }
+
+    /* Center Main Panel */
+    .main-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .nav-tabs {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      background: var(--panel-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 6px 12px;
+      overflow-x: auto;
+    }
+
+    .tab-item {
+      padding: 6px 14px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-muted);
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .tab-item.active {
+      background: #1e293b;
+      color: #fff;
+    }
+
+    .badge {
+      background: #2563eb;
+      color: #fff;
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 10px;
+      font-weight: 700;
+    }
+
+    .orders-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .order-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .order-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .order-phone {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .status-tag {
+      font-size: 10px;
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .tag-logged { background: rgba(34, 197, 94, 0.2); color: var(--accent-green); border: 1px solid var(--accent-green); }
+    .tag-waiting { background: rgba(245, 158, 11, 0.2); color: var(--accent-amber); border: 1px solid var(--accent-amber); }
+
+    .order-meta {
+      font-size: 11px;
+      color: #64748b;
+    }
+
+    .progress-bar-container {
+      width: 100%;
+      height: 4px;
+      background: #1e293b;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: #38bdf8;
+      border-radius: 4px;
+    }
+
+    .otp-display-box {
+      background: #090d16;
+      border: 1px dashed #334155;
+      border-radius: 10px;
+      padding: 14px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--accent-blue);
+      letter-spacing: 8px;
+    }
+
+    .card-actions {
+      display: flex;
+      gap: 12px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .card-actions span { cursor: pointer; }
+    .card-actions span:hover { text-decoration: underline; color: #fff; }
+
+    /* Right Metrics Sidebar */
+    .sidebar-right {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .metric-panel {
+      background: var(--panel-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .panel-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .metric-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-size: 13px;
+    }
+
+    .metric-row {
+      display: flex;
+      justify-content: space-between;
+      color: var(--text-muted);
+    }
+    .metric-val {
+      font-family: 'JetBrains Mono', monospace;
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .log-window {
+      background: #070b13;
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 10px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      line-height: 1.5;
+      color: #f59e0b;
+      height: 160px;
+      overflow-y: auto;
+    }
+
+    .api-status-box {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .api-btn {
+      background: #f1f5f9;
+      color: #0f172a;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    @media (max-width: 1024px) {
+      .dashboard-container { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="dashboard-container">
+    <!-- Left Buttons Panel -->
+    <div class="sidebar-left">
+      <div class="config-card">
+        <div class="config-row">
+          <span>Headless Mode</span>
+          <div class="toggle-switch"></div>
+        </div>
+        <div class="config-row">
+          <span>OTP Delay (seconds)</span>
+          <div class="stepper"><span>-</span><span>4</span><span>+</span></div>
+        </div>
+      </div>
+
+      <button class="action-btn btn-pause">⏸ Pause</button>
+      <button class="action-btn btn-stop">■ Stop (Full Reset)</button>
+      <button class="action-btn btn-kill">🗡 Kill Zombie Browsers</button>
+      <button class="action-btn btn-convert">🗂 Convert Emails</button>
+      <button class="action-btn btn-check">🔍 Check Links</button>
+      <button class="action-btn btn-apk">📲 APK / Link Extractor</button>
+      <button class="action-btn btn-retry">🔄 Retry OTP Timeouts</button>
+    </div>
+
+    <!-- Center Cards Feed -->
+    <div class="main-panel">
+      <div class="nav-tabs">
+        <div class="tab-item active">Active Orders <span class="badge">3</span></div>
+        <div class="tab-item">Analytics</div>
+        <div class="tab-item">Display</div>
+        <div class="tab-item">Links <span class="badge">148</span></div>
+        <div class="tab-item">Checked Links <span class="badge">4</span></div>
+        <div class="tab-item">Proxies <span class="badge">10</span></div>
+      </div>
+
+      <div class="orders-list">
+        <!-- Order Card 1 -->
+        <div class="order-card">
+          <div class="order-header">
+            <div class="order-phone">
+              ++919178581984
+              <span class="status-tag tag-logged">LOGGED IN</span>
+            </div>
+            <div class="order-meta">10:50 am</div>
+          </div>
+          <div class="order-meta">Firebase Direct · Jio</div>
+          <div class="progress-bar-container">
+            <div class="progress-bar-fill" style="width: 100%;"></div>
+          </div>
+          <div class="otp-display-box">738697</div>
+          <div class="card-actions">
+            <span>Cancel</span>
+            <span onclick="navigator.clipboard.writeText('738697')">Copy</span>
+          </div>
+        </div>
+
+        <!-- Order Card 2 -->
+        <div class="order-card">
+          <div class="order-header">
+            <div class="order-phone">
+              ++917972749643
+              <span class="status-tag tag-waiting">WAITING SMS</span>
+            </div>
+            <div class="order-meta">10:50 am</div>
+          </div>
+          <div class="order-meta">Firebase Direct · Jio</div>
+          <div class="progress-bar-container">
+            <div class="progress-bar-fill" style="width: 45%;"></div>
+          </div>
+          <div class="card-actions">
+            <span>Cancel</span>
+            <span>Re-poll</span>
+          </div>
+        </div>
+
+        <!-- Order Card 3 -->
+        <div class="order-card">
+          <div class="order-header">
+            <div class="order-phone">
+              ++918077802160
+              <span class="status-tag tag-waiting">WAITING SMS</span>
+            </div>
+            <div class="order-meta">10:50 am</div>
+          </div>
+          <div class="order-meta">Firebase Direct · Jio</div>
+          <div class="progress-bar-container">
+            <div class="progress-bar-fill" style="width: 20%;"></div>
+          </div>
+          <div class="card-actions">
+            <span>Cancel</span>
+            <span>Re-poll</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Analytics & Activity Log -->
+    <div class="sidebar-right">
+      <div class="metric-panel">
+        <div class="panel-title">Batch Progress</div>
+        <div class="metric-grid">
+          <div class="metric-row"><span>Total Devices:</span><span class="metric-val">189</span></div>
+          <div class="metric-row"><span>Checked:</span><span class="metric-val">38</span></div>
+          <div class="metric-row"><span>Remaining:</span><span class="metric-val">151</span></div>
+          <div class="metric-row"><span>Speed (TPM):</span><span class="metric-val">7.1</span></div>
+          <div class="metric-row"><span>ETA:</span><span class="metric-val">21m 8s</span></div>
+        </div>
+        <div class="progress-bar-container" style="margin-top: 8px;">
+          <div class="progress-bar-fill" style="width: 20%; background: #818cf8;"></div>
+        </div>
+      </div>
+
+      <div class="metric-panel">
+        <div class="panel-title">
+          <span>Activity Log</span>
+          <span style="font-size: 11px; color: var(--accent-blue); cursor: pointer;">Clear</span>
+        </div>
+        <div class="log-window">
+          [10:50:37 am] [7972749643]<br>
+          OTP taking &gt;7s releasing slot for next account...<br><br>
+          recent API error. Pending OTP waits continue.
+        </div>
+      </div>
+
+      <div class="metric-panel">
+        <div class="api-status-box">
+          <span style="font-size: 12px; color: var(--text-muted);">API Status</span>
+          <button class="api-btn">Get API</button>
+        </div>
+        <span style="font-size: 11px; color: #64748b;">No keys configured</span>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
